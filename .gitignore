@@ -1,0 +1,16 @@
+# Root
+node_modules
+.env
+coverage
+coverage.json
+typechain
+typechain-types
+
+# App
+app/node_modules
+app/.env
+
+# Hardhat files
+cache
+artifacts
+
