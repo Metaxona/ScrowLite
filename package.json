@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "nodemon --watch test/escrow.js --exec npx hardhat test test/escrow.js",
-    "security-test": "nodemon --watch contracts --exec slither . --filter-paths \"ERC20.sol|ERC721.sol|ERC1155.sol|openzeppelin\" ",
-    "hh-deploy-local" : "npx hardhat run scripts/deploy.js",
-    "hh-deploy-sepolia" : "npx hardhat run --network sepolia scripts/deploy.js"
+    "security-test": "nodemon --watch contracts --exec \"slither . --filter-paths \"ERC20.sol|ERC721.sol|ERC1155.sol|openzeppelin\"\" ",
+    "hh-deploy-local": "npx hardhat run scripts/deploy.js",
+    "hh-deploy-sepolia": "npx hardhat run --network sepolia scripts/deploy.js"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.2",
+    "alchemy-sdk": "^2.9.2",
     "dotenv": "^16.1.4"
   }
 }

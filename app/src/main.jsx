@@ -1,21 +1,21 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
-import { WagmiConfig, sepolia } from 'wagmi'
-import { wagmiConfig, chains } from './wagmi.js';
-import { RainbowKitProvider, darkTheme, lightTheme } from '@rainbow-me/rainbowkit'
-import '@rainbow-me/rainbowkit/styles.css';
-import {BrowserRouter} from 'react-router-dom'
+import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
+import "@rainbow-me/rainbowkit/styles.css";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { WagmiConfig, sepolia } from "wagmi";
+import App from "./App.jsx";
+import "./index.css";
+import { chains, wagmiConfig } from "./wagmi.js";
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <WagmiConfig config={wagmiConfig}>
-        <RainbowKitProvider chains={chains} initialChain={sepolia} theme={{ lightMode: lightTheme(), darkMode: darkTheme(),}}>
+    <WagmiConfig config={wagmiConfig}>
+      <RainbowKitProvider chains={chains} initialChain={sepolia} theme={{ lightMode: lightTheme(), darkMode: darkTheme() }}>
+        <BrowserRouter>
           <App />
-        </RainbowKitProvider>
-      </WagmiConfig>
-    </BrowserRouter>
+        </BrowserRouter>
+      </RainbowKitProvider>
+    </WagmiConfig>
   </React.StrictMode>,
-)
+);

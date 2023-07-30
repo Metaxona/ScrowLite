@@ -89,7 +89,7 @@ button:focus-visible {
 
 /* For Mozilla */
 
-.scrollbar{
+.scrollbar {
   scrollbar-color: #74a2c3 #5c738b;
   scrollbar-width: thin !important;
 }

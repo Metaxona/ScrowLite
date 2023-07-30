@@ -1106,5 +1106,244 @@ describe('Escrow', () => {
 
     });
     
+    describe('Withdrawable Functions', () => {
+        /**
+        withdraw
+        withdrawAmount
+        withdrawERC20
+        withdrawERC721
+        withdrawERC1155
+         */
+
+        it('Should Withdraw ETH', async() => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await partyB.sendTransaction({
+                to: escrow.target,
+                value: hre.ethers.parseEther("1"),
+            });
+
+            expect(await hre.ethers.provider.getBalance(escrow.target)).to.be.eq(hre.ethers.parseEther("1"))
+
+            await expect(escrow.connect(deployer).withdraw()).to.be.not.reverted
+            
+            expect(await hre.ethers.provider.getBalance(escrow.target)).to.be.eq(0)
+            
+        });
+
+        it('Should Withdraw Specific Amount of ETH', async() => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+            
+            await partyB.sendTransaction({
+                to: escrow.target,
+                value: hre.ethers.parseEther("1"),
+            });
+
+            expect(await hre.ethers.provider.getBalance(escrow.target)).to.be.eq(hre.ethers.parseEther("1"))
+
+            await expect(escrow.connect(deployer).withdrawAmount(hre.ethers.parseEther("0.5"))).to.be.not.reverted
+            
+            expect(await hre.ethers.provider.getBalance(escrow.target)).to.be.eq(hre.ethers.parseEther("0.5"))
+        });
+
+        it('Should Withdraw ERC20', async() => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await erc20.connect(deployer).faucetMint(deployer.address)
+
+            expect(await erc20.connect(deployer).balanceOf(deployer.address)).to.be.gt(0)
+
+            expect(await erc20.connect(deployer).transfer(escrow.target, hre.ethers.parseEther("10")))
+
+            expect(await erc20.connect(deployer).balanceOf(escrow.target)).to.be.eq(hre.ethers.parseEther("10"))
+
+            await expect(escrow.connect(deployer).withdrawERC20(deployer.address, erc20.target, hre.ethers.parseEther("10"))).to.not.be.reverted
+           
+            expect(await erc20.connect(deployer).balanceOf(escrow.target)).to.be.eq(hre.ethers.parseEther("0"))
+        });
+
+        it('Should Withdraw ERC721', async() => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await erc721.connect(deployer).faucetMint(1)
+
+            expect(await erc721.connect(deployer).balanceOf(deployer.address)).to.be.eq(1)
+
+            expect(await erc721.connect(deployer).ownerOf(0)).to.be.eq(deployer.address)
+
+            expect(await erc721.connect(deployer).transferFrom(deployer.address, escrow.target, 0))
+
+            expect(await erc721.connect(deployer).balanceOf(escrow.target)).to.be.eq(1)
+
+            expect(await erc721.connect(deployer).ownerOf(0)).to.be.eq(escrow.target)
+
+            await expect(escrow.connect(deployer).withdrawERC721(deployer.address, erc721.target, 0)).to.not.be.reverted
+           
+            expect(await erc721.connect(deployer).balanceOf(escrow.target)).to.be.eq(0)
+
+            expect(await erc721.connect(deployer).ownerOf(0)).to.be.eq(deployer.address)
+            
+        });
+
+        it('Should Fail Depositing ERC1155 Due To ERC1155Receiver Not Implemented', async() => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await erc1155.connect(deployer).faucetMint(0, 1, "0x")
+
+            expect(await erc1155.connect(deployer).balanceOf(deployer.address, 0)).to.be.eq(1)
+
+            await expect(erc1155.connect(deployer).safeTransferFrom(deployer.address, escrow.target, 0, 1, "0x")).to.be.reverted
+           
+        });
+
+        it('Should Not Withdraw ETH', async() => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await partyB.sendTransaction({
+                to: escrow.target,
+                value: hre.ethers.parseEther("1"),
+            });
+
+            expect(await hre.ethers.provider.getBalance(escrow.target)).to.be.eq(hre.ethers.parseEther("1"))
+
+            await expect(escrow.connect(partyA).withdraw()).to.be.reverted
+            
+            expect(await hre.ethers.provider.getBalance(escrow.target)).to.be.eq(hre.ethers.parseEther("1"))
+        });
+
+        it('Should Not Withdraw Specific Amount of ETH', async() => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await partyB.sendTransaction({
+                to: escrow.target,
+                value: hre.ethers.parseEther("1"),
+            });
+
+            expect(await hre.ethers.provider.getBalance(escrow.target)).to.be.eq(hre.ethers.parseEther("1"))
+
+            await expect(escrow.connect(partyA).withdrawAmount(hre.ethers.parseEther("0.5"))).to.be.reverted
+            
+            expect(await hre.ethers.provider.getBalance(escrow.target)).to.be.eq(hre.ethers.parseEther("1"))
+        });
+
+        it('Should Not Withdraw ERC20', async() => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await erc20.connect(deployer).faucetMint(deployer.address)
+
+            expect(await erc20.connect(deployer).balanceOf(deployer.address)).to.be.gt(0)
+
+            expect(await erc20.connect(deployer).transfer(escrow.target, hre.ethers.parseEther("10")))
+
+            expect(await erc20.connect(deployer).balanceOf(escrow.target)).to.be.eq(hre.ethers.parseEther("10"))
+
+            await expect(escrow.connect(partyA).withdrawERC20(partyA.address, erc20.target, hre.ethers.parseEther("10"))).to.be.reverted
+           
+            expect(await erc20.connect(deployer).balanceOf(escrow.target)).to.be.eq(hre.ethers.parseEther("10"))
+        });
+
+        it('Should Not Withdraw ERC721', async() => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await erc721.connect(deployer).faucetMint(1)
+
+            expect(await erc721.connect(deployer).balanceOf(deployer.address)).to.be.eq(1)
+
+            expect(await erc721.connect(deployer).ownerOf(0)).to.be.eq(deployer.address)
+
+            expect(await erc721.connect(deployer).transferFrom(deployer.address, escrow.target, 0))
+
+            expect(await erc721.connect(deployer).balanceOf(escrow.target)).to.be.eq(1)
+
+            expect(await erc721.connect(deployer).ownerOf(0)).to.be.eq(escrow.target)
+
+            await expect(escrow.connect(partyA).withdrawERC721(partyA.address, erc721.target, 0)).to.be.reverted
+           
+            expect(await erc721.connect(deployer).balanceOf(escrow.target)).to.be.eq(1)
+
+            expect(await erc721.connect(deployer).ownerOf(0)).to.be.eq(escrow.target)
+        });
+        
+    });
+    
+    describe('Ownable Functions', () => {
+
+        it('Owner Should be The Same As The Deployer', async () => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            expect(await escrow.connect(deployer).owner()).to.be.eq(deployer.address)
+
+            
+        });
+
+        it('Should Transfer Ownership', async () => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await expect(escrow.connect(deployer).transferOwnership(partyA.address)).to.not.be.reverted
+
+            expect(await escrow.connect(deployer).owner()).to.be.eq(partyA.address)
+
+            
+        });
+
+        it('Should Not Transfer Ownerships', async () => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await expect(escrow.connect(partyB).transferOwnership(partyA.address)).to.be.reverted
+
+            expect(await escrow.connect(partyB).owner()).to.be.eq(deployer.address)
+            
+        });
+        
+    });
+
+    describe('Fees Functions', () => {
+
+        it('Should Set Fees', async () => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await expect(escrow.connect(deployer).setFee(hre.ethers.parseEther("0.1"))).to.not.be.reverted
+
+            expect(await escrow.connect(deployer).feeInETH()).to.be.eq(hre.ethers.parseEther("0.1"))
+
+            
+        });
+
+        it('Should Not Set Fees', async () => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await expect(escrow.connect(partyB).setFee(hre.ethers.parseEther("0.1"))).to.be.reverted
+
+            expect(await escrow.connect(partyB).feeInETH()).to.be.eq(hre.ethers.parseEther("0.001"))
+            
+        });
+        
+        
+    });
+    
+    describe('Pausable Functions', () => {
+        
+        it('Should Toggle Create and Accept', async () => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await expect(escrow.connect(deployer).toggleCreateAndAccept()).to.not.be.reverted
+
+            expect(await escrow.connect(deployer).interactionPaused()).to.be.true
+
+            
+        });
+
+        it('Should Not Toggle Create and Accept', async () => {
+            const {deployer, partyA, partyB} = await loadFixture(loadAccounts);
+
+            await expect(escrow.connect(partyB).toggleCreateAndAccept()).to.be.reverted
+
+            expect(await escrow.connect(partyB).interactionPaused()).to.be.false
+            
+        });
+
+    });
+    
+    
     
 });

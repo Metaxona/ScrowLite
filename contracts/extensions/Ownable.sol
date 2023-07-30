@@ -2,13 +2,13 @@
 pragma solidity ^0.8.18;
 
 abstract contract Ownable {
-    address owner;
+    address public owner;
 
     event OwnershipTransfered(address _newOwner);
 
     error NotOwnerError();
     
-    function transferOwnership(address newOwner) external virtual {
+    function transferOwnership(address newOwner) external virtual onlyOwner {
         require(newOwner != address(0));
         owner = newOwner;
         emit OwnershipTransfered(newOwner);

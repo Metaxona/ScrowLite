@@ -15,6 +15,7 @@ import "./libraries/ERCBalanceLibrary.sol";
 /**
 @title Metaxona ERC Escrow System
 @custom:contract-name Escrow
+@custom:version 1.0.1-beta
 @author Metaxona
 @custom:author-url https://metaxona.com 
 @custom:github https://github.com/metaxona
@@ -91,7 +92,7 @@ contract Escrow is Ownable, Fees, Pausable, Withdrawable {
 
         bytes32 _id = IdGenerator.generateId(sender, _partyB, blocknumber, timestamp);
 
-        if(tradeInstance[_id].exist || _partyB == address(0) || _partyB == sender) revert InvalidTradePramsError();
+        if(tradeInstance[_id].exist ||  _partyB == address(0) || _partyB == sender) revert InvalidTradePramsError();
 
         tradeInstance[_id] = Instance({
                                         exist : true,
@@ -364,6 +365,7 @@ contract Escrow is Ownable, Fees, Pausable, Withdrawable {
     ]
     */
     modifier partyAHasRequirements(AssetType _fromType, Assets memory _fromToken) {
+
         uint8 _res;
         if(_fromType == AssetType.ERC20) {
             if(ERCBalance.ERC20RequirementsTrue(_fromToken.erc20.contractAddress, address(this), msg.sender, _fromToken.erc20.amount)){

@@ -1,51 +1,18 @@
-import { configureChains, createConfig, sepolia, mainnet } from 'wagmi'
-import { publicProvider } from 'wagmi/providers/public';
-import { getDefaultWallets, connectorsForWallets  } from '@rainbow-me/rainbowkit' 
-import {
-    injectedWallet,
-    rainbowWallet,
-    trustWallet,
-    walletConnectWallet,
-    metaMaskWallet,
-    braveWallet,
-} from '@rainbow-me/rainbowkit/wallets';
-import { polygon, bsc } from 'viem/chains';
+import { getDefaultWallets } from "@rainbow-me/rainbowkit";
+import { configureChains, createConfig, sepolia } from "wagmi";
+import { alchemyProvider } from "wagmi/providers/alchemy";
+import { publicProvider } from "wagmi/providers/public";
 
-
-export const { chains, publicClient } = configureChains(
-  [sepolia],
-  [
-    publicProvider()
-  ]
-);
+export const { chains, publicClient } = configureChains([sepolia], [alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_API_KEY }), publicProvider()]);
 
 const { connectors } = getDefaultWallets({
-  appName: 'WhitelistApp',
-  projectId: '10572be452812a0d483a4ec33344be81',
-  chains
+  appName: "WhitelistApp",
+  projectId: "10572be452812a0d483a4ec33344be81",
+  chains,
 });
-
-// const connectors = connectorsForWallets([
-//     {
-//       groupName: 'Recommended',
-//       wallets: [
-//         injectedWallet({ chains }),
-//         metaMaskWallet({ projectId: "metamask" ,chains }),
-//     ],
-//     },
-//     {
-//         groupName: "Others",
-//         wallets: [
-//             braveWallet({chains}),
-//             trustWallet({chains}),
-//             walletConnectWallet({ projectId: '10572be452812a0d483a4ec33344be81' , chains }),
-//             // rainbowWallet({projectId, chains}),
-//         ]
-//     }
-//   ]);
 
 export const wagmiConfig = createConfig({
   autoConnect: true,
   connectors,
-  publicClient
-})
+  publicClient,
+});
