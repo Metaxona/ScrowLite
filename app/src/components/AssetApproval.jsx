@@ -1,10 +1,8 @@
 import { Button, Card, Flex, FormControl, FormLabel, Input, Select } from "@chakra-ui/react";
-import { writeContract, watchContractEvent } from "@wagmi/core";
 import { useState } from "react";
 import { formatEther, parseEther } from "viem";
-import { erc20ABI, erc721ABI } from "wagmi";
-import { erc1155Info } from "../ABI/erc1155";
 import { escrowInfo } from "../ABI/escrow";
+import { approveERC1155, approveERC20, approveERC721 } from "../utils/assetApproval";
 import { errorToast } from "../utils/toasts";
 
 export default function AssetApproval() {
@@ -20,179 +18,130 @@ export default function AssetApproval() {
     const formJson = Object.fromEntries(formData.entries());
     setIsInteracting(true);
 
-    try {
-      if (interactionType === "Approve") {
-        if (assetType === "ERC20") {
-          const { hash } = await writeContract({
-            address: formJson.approvalContractAddress,
-            abi: erc20ABI,
-            functionName: "approve",
-            args: [escrowInfo.contractAddress, parseEther(`${formJson.approvalAmount}`)],
-          });
-
-          const unwatch = watchContractEvent(
-            {
-              address: formJson.approvalContractAddress,
-              abi: erc20ABI,
-              eventName: "Approval",
-            },
-            (data) => {
-              if (data[0].args.owner === address) {
-                setIsInteracting(false);
-                successToast(`${formJson.approvalContractAddress} Successfuly Approved ${formatEther(`${formJson.approvalAmount}`)} Tokens`, hash);
-                unwatch();
-              }
-            },
-          );
-        }
-        if (assetType === "ERC721") {
-          const { hash } = await writeContract({
-            address: formJson.approvalContractAddress,
-            abi: erc721ABI,
-            functionName: "approve",
-            args: [escrowInfo.contractAddress, formJson.approvalTokenId],
-          });
-
-          const unwatch = watchContractEvent(
-            {
-              address: formJson.approvalContractAddress,
-              abi: erc721ABI,
-              eventName: "Approval",
-            },
-            (data) => {
-              if (data[0].args.owner === address) {
-                setIsInteracting(false);
-                successToast(`${formJson.approvalContractAddress} Successfuly Approved Id: ${formJson.approvalTokenId}`, hash);
-                unwatch();
-              }
-            },
-          );
-        }
+    if (interactionType === "Approve") {
+      if (assetType === "ERC20") {
+        approveERC20(
+          { address: formJson.approvalContractAddress, spender: escrowInfo.contractAddress, amount: parseEther(`${formJson.approvalAmount}`) },
+          (hash, data, unwatch) => {
+            if (data[0].args.owner === address) {
+              setIsInteracting(false);
+              successToast(`${formJson.approvalContractAddress} Successfuly Approved ${formatEther(`${formJson.approvalAmount}`)} Tokens`, hash);
+              unwatch();
+            }
+          },
+          (error) => {
+            errorToast(error);
+            setIsInteracting(false);
+          },
+        );
+      }
+      if (assetType === "ERC721") {
+        approveERC721(
+          { address: formJson.approvalContractAddress, operator: escrowInfo.contractAddress, tokenId: formJson.approvalTokenId, approvalType: "SINGLE" },
+          (hash, data, unwatch) => {
+            if (data[0].args.owner === address) {
+              setIsInteracting(false);
+              successToast(`${formJson.approvalContractAddress} Successfuly Approved Id: ${formJson.approvalTokenId}`, hash);
+              setHasBeenApproved(true);
+              unwatch();
+            }
+          },
+          (error) => {
+            errorToast(error);
+            setIsInteracting(false);
+          },
+        );
       }
 
       if (interactionType === "ApproveAll") {
         if (assetType === "ERC721") {
-          const { hash } = await writeContract({
-            address: formJson.approvalContractAddress,
-            abi: erc721ABI,
-            functionName: "setApprovalForAll",
-            args: [escrowInfo.contractAddress, true],
-          });
-
-          const unwatch = watchContractEvent(
-            {
-              address: formJson.approvalContractAddress,
-              abi: erc721ABI,
-              eventName: "ApprovalForAll",
-            },
-            (data) => {
+          approveERC721(
+            { address: formJson.approvalContractAddress, operator: escrowInfo.contractAddress, approvalType: "ALL" },
+            (hash, data, unwatch) => {
               if (data[0].args.owner === address) {
                 setIsInteracting(false);
-                successToast(`${formJson.approvalContractAddress} Successfuly Approved All`, hash);
+                successToast(`${formJson.approvalContractAddress} Successfuly Approved Id: ${formJson.approvalTokenId}`, hash);
+                setHasBeenApproved(true);
                 unwatch();
               }
+            },
+            (error) => {
+              errorToast(error);
+              setIsInteracting(false);
             },
           );
         }
         if (assetType === "ERC1155") {
-          const { hash } = await writeContract({
-            address: formJson.approvalContractAddress,
-            abi: erc1155Info.abi,
-            functionName: "setApprovalForAll",
-            args: [escrowInfo.contractAddress, true],
-          });
-
-          const unwatch = watchContractEvent(
-            {
-              address: formJson.approvalContractAddress,
-              abi: erc1155Info.abi,
-              eventName: "ApprovalForAll",
-            },
-            (data) => {
+          approveERC1155(
+            { address: formJson.approvalContractAddress, operator: escrowInfo.contractAddress, tokenId: formJson.approvalTokenId },
+            (hash, data, unwatch) => {
               if (data[0].args.owner === address) {
                 setIsInteracting(false);
-                successToast(`${formJson.approvalContractAddress} Successfuly Approved All`, hash);
+                successToast(`${formJson.approvalContractAddress} Successfuly Approved Id: ${formJson.approvalTokenId}`, hash);
+                setHasBeenApproved(true);
                 unwatch();
               }
+            },
+            (error) => {
+              errorToast(error);
+              setIsInteracting(false);
             },
           );
         }
       }
+    }
 
-      if (interactionType === "Revoke") {
-        if (assetType === "ERC20") {
-          const { hash } = await writeContract({
-            address: formJson.approvalContractAddress,
-            abi: erc20ABI,
-            functionName: "approve",
-            args: [escrowInfo.contractAddress, 0],
-          });
-
-          const unwatch = watchContractEvent(
-            {
-              address: formJson.approvalContractAddress,
-              abi: erc20ABI,
-              eventName: "Approval",
-            },
-            (data) => {
-              if (data[0].args.owner === address) {
-                setIsInteracting(false);
-                successToast(`${formJson.approvalContractAddress} Successfuly Revoked Allowance Approval`, hash);
-                unwatch();
-              }
-            },
-          );
-        }
-        if (assetType === "ERC721") {
-          const { hash } = await writeContract({
-            address: formJson.approvalContractAddress,
-            abi: erc721ABI,
-            functionName: "setApprovalForAll",
-            args: [escrowInfo.contractAddress, false],
-          });
-
-          const unwatch = watchContractEvent(
-            {
-              address: formJson.approvalContractAddress,
-              abi: erc721ABI,
-              eventName: "ApprovalForAll",
-            },
-            (data) => {
-              if (data[0].args.owner === address) {
-                setIsInteracting(false);
-                successToast(`${formJson.approvalContractAddress} Successfuly Revoked Approval For All`, hash);
-                unwatch();
-              }
-            },
-          );
-        }
-        if (assetType === "ERC1155") {
-          const { hash } = await writeContract({
-            address: formJson.approvalContractAddress,
-            abi: erc1155Info.abi,
-            functionName: "setApprovalForAll",
-            args: [escrowInfo.contractAddress, false],
-          });
-
-          const unwatch = watchContractEvent(
-            {
-              address: formJson.approvalContractAddress,
-              abi: erc1155Info.abi,
-              eventName: "ApprovalForAll",
-            },
-            (data) => {
-              if (data[0].args.owner === address) {
-                setIsInteracting(false);
-                successToast(`${formJson.approvalContractAddress} Successfuly Revoked Approval For All`, hash);
-                unwatch();
-              }
-            },
-          );
-        }
+    if (interactionType === "Revoke") {
+      if (assetType === "ERC20") {
+        approveERC20(
+          { address: formJson.approvalContractAddress, spender: escrowInfo.contractAddress, amount: parseEther(`${formJson.approvalAmount}`), revokeApproval: true },
+          (hash, data, unwatch) => {
+            if (data[0].args.owner === address) {
+              setIsInteracting(false);
+              successToast(`${formJson.approvalContractAddress} Successfuly Approved ${formatEther(`${formJson.approvalAmount}`)} Tokens`, hash);
+              unwatch();
+            }
+          },
+          (error) => {
+            errorToast(error);
+            setIsInteracting(false);
+          },
+        );
       }
-    } catch (error) {
-      errorToast(error);
-      setIsInteracting(false);
+      if (assetType === "ERC721") {
+        approveERC721(
+          { address: formJson.approvalContractAddress, operator: escrowInfo.contractAddress, approvalType: "ALL", revokeApproval: true },
+          (hash, data, unwatch) => {
+            if (data[0].args.owner === address) {
+              setIsInteracting(false);
+              successToast(`${formJson.approvalContractAddress} Successfuly Approved Id: ${formJson.approvalTokenId}`, hash);
+              setHasBeenApproved(true);
+              unwatch();
+            }
+          },
+          (error) => {
+            errorToast(error);
+            setIsInteracting(false);
+          },
+        );
+      }
+      if (assetType === "ERC1155") {
+        approveERC1155(
+          { address: formJson.approvalContractAddress, operator: escrowInfo.contractAddress, tokenId: formJson.approvalTokenId, revokeApproval: true },
+          (hash, data, unwatch) => {
+            if (data[0].args.owner === address) {
+              setIsInteracting(false);
+              successToast(`${formJson.approvalContractAddress} Successfuly Approved Id: ${formJson.approvalTokenId}`, hash);
+              setHasBeenApproved(true);
+              unwatch();
+            }
+          },
+          (error) => {
+            errorToast(error);
+            setIsInteracting(false);
+          },
+        );
+      }
     }
   }
 

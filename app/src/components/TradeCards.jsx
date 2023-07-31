@@ -43,6 +43,7 @@ import { IPFStoHTTP } from "../utils/ipfstohttps";
 import shortenAddress from "../utils/shortenAddress";
 import { parseEther } from "viem";
 import { errorToast, successToast } from "../utils/toasts";
+import { approveERC1155, approveERC20, approveERC721 } from "../utils/assetApproval";
 
 const outlineColor = "#5CB9FE";
 const ONE_DAY_IN_MILISECONDS = 86400000;
@@ -220,7 +221,6 @@ export default function TradeCard({
       if (fromType === "ERC20") {
         const fromMetadata = await alchemy.core.getTokenMetadata(fromAddress);
         setFromImage(fromMetadata.logo || ASSET_IMAGE[fromType]);
-        console.log(fromMetadata);
         setFromAssetInfo({
           name: fromMetadata.name,
           collectionName: null,
@@ -230,7 +230,6 @@ export default function TradeCard({
       if (fromType === "ERC721") {
         const fromMetadata = await alchemy.nft.getNftMetadata(fromAddress, fromTokenId, { tokenType: fromType });
         setFromImage(IPFStoHTTP(fromMetadata.rawMetadata?.image_url || fromMetadata.rawMetadata?.image || ASSET_IMAGE[fromType]));
-        console.log(fromMetadata);
         setFromAssetInfo({
           name: fromMetadata?.title,
           collectionName: fromMetadata.contract?.name,
@@ -240,7 +239,6 @@ export default function TradeCard({
       if (fromType === "ERC1155") {
         const fromMetadata = await alchemy.nft.getNftMetadata(fromAddress, fromTokenId, { tokenType: fromType });
         setFromImage(IPFStoHTTP(fromMetadata.rawMetadata?.image_url || fromMetadata.rawMetadata?.image || ASSET_IMAGE[fromType]));
-        console.log(fromMetadata);
         setFromAssetInfo({
           name: fromMetadata?.title,
           collectionName: fromMetadata.contract?.name,
@@ -250,7 +248,6 @@ export default function TradeCard({
       if (toType === "ERC20") {
         const toMetadata = await alchemy.core.getTokenMetadata(toAddress);
         setToImage(toMetadata.logo || ASSET_IMAGE[toType]);
-        console.log(toMetadata);
         setToAssetInfo({
           name: toMetadata?.name,
           collectionName: null,
@@ -260,7 +257,6 @@ export default function TradeCard({
       if (toType === "ERC721") {
         const toMetadata = await alchemy.nft.getNftMetadata(toAddress, toTokenId, { tokenType: toType });
         setToImage(IPFStoHTTP(toMetadata.rawMetadata?.image_url || toMetadata.rawMetadata?.image || ASSET_IMAGE[toType]));
-        console.log(toMetadata);
         setToAssetInfo({
           name: toMetadata?.title,
           collectionName: toMetadata.contract?.name,
@@ -270,7 +266,6 @@ export default function TradeCard({
       if (toType === "ERC1155") {
         const toMetadata = await alchemy.nft.getNftMetadata(toAddress, toTokenId, { tokenType: toType });
         setToImage(IPFStoHTTP(toMetadata.rawMetadata?.image_url || toMetadata.rawMetadata?.image || ASSET_IMAGE[toType]));
-        console.log(toMetadata);
         setToAssetInfo({
           name: toMetadata?.title,
           collectionName: toMetadata.contract?.name,
@@ -326,82 +321,56 @@ export default function TradeCard({
     setIsInteracting(true);
     setHasBeenApproved(false);
 
-    try {
-      if (toType === "ERC20") {
-        const { hash } = await writeContract({
-          address: toAddress,
-          abi: erc20ABI,
-          functionName: "approve",
-          args: [escrowInfo.contractAddress, parseEther(toAmount)],
-        });
-
-        const unwatch = watchContractEvent(
-          {
-            address: toAddress,
-            abi: erc20ABI,
-            eventName: "Approval",
-          },
-          (data) => {
-            if (data[0].args.owner === address) {
-              setIsInteracting(false);
-              successToast(`${toAddress} Successfuly Approved`, hash);
-              setHasBeenApproved(true);
-              unwatch();
-            }
-          },
-        );
-      }
-      if (toType === "ERC721") {
-        const { hash } = await writeContract({
-          address: toAddress,
-          abi: erc721ABI,
-          functionName: "setApprovalForAll",
-          args: [escrowInfo.contractAddress, true],
-        });
-
-        const unwatch = watchContractEvent(
-          {
-            address: toAddress,
-            abi: erc721ABI,
-            eventName: "ApprovalForAll",
-          },
-          (data) => {
-            if (data[0].args.owner === address) {
-              setIsInteracting(false);
-              successToast(`${toAddress} Successfuly Approved`, hash);
-              setHasBeenApproved(true);
-              unwatch();
-            }
-          },
-        );
-      }
-      if (toType === "ERC1155") {
-        const { hash } = await writeContract({
-          address: toAddress,
-          abi: erc1155Info.abi,
-          functionName: "setApprovalForAll",
-          args: [escrowInfo.contractAddress, true],
-        });
-
-        const unwatch = watchContractEvent(
-          {
-            address: toAddress,
-            abi: erc1155Info.abi,
-            eventName: "ApprovalForAll",
-          },
-          (data) => {
-            if (data[0].args.owner === address) {
-              setIsInteracting(false);
-              successToast(`${toAddress} Successfuly Approved`, hash);
-              setHasBeenApproved(true);
-              unwatch();
-            }
-          },
-        );
-      }
-    } catch (error) {
-      errorToast(error);
-      setIsInteracting(false);
+    if (toType === "ERC20") {
+      approveERC20(
+        { address: toAddress, spender: escrowInfo.contractAddress, amount: parseEther(toAmount) },
+        (hash, data, unwatch) => {
+          if (data[0].args.owner === address) {
+            setIsInteracting(false);
+            successToast(`${toAddress} Successfuly Approved`, hash);
+            setHasBeenApproved(true);
+            unwatch();
+          }
+        },
+        (error) => {
+          errorToast(error);
+          setIsInteracting(false);
+        },
+      );
+    }
+    if (toType === "ERC721") {
+      approveERC721(
+        { address: toAddress, operator: escrowInfo.contractAddress, tokenId: toTokenId, approvalType: "SINGLE" },
+        (hash, data, unwatch) => {
+          if (data[0].args.owner === address) {
+            setIsInteracting(false);
+            successToast(`${toAddress} Successfuly Approved`, hash);
+            setHasBeenApproved(true);
+            unwatch();
+          }
+        },
+        (error) => {
+          errorToast(error);
+          setIsInteracting(false);
+        },
+      );
+    }
+    if (toType === "ERC1155") {
+      approveERC1155(
+        { address: toAddress, operator: escrowInfo.contractAddress },
+        (hash, data, unwatch) => {
+          if (data[0].args.owner === address) {
+            setIsInteracting(false);
+            successToast(`${toAddress} Successfuly Approved`, hash);
+            setHasBeenApproved(true);
+            unwatch();
+          }
+        },
+        (error) => {
+          errorToast(error);
+          setIsInteracting(false);
+        },
+      );
     }
   }
 
