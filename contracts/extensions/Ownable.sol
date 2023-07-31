@@ -7,6 +7,10 @@ abstract contract Ownable {
     event OwnershipTransfered(address _newOwner);
 
     error NotOwnerError();
+
+    constructor(){
+        owner = msg.sender;
+    }
     
     function transferOwnership(address newOwner) external virtual onlyOwner {
         require(newOwner != address(0));

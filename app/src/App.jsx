@@ -1,4 +1,4 @@
-import { Box, ChakraProvider, Hide } from "@chakra-ui/react";
+import { Box, ChakraProvider, Flex, Heading, Hide } from "@chakra-ui/react";
 import { Route, Routes } from "react-router-dom";
 import { useAccount } from "wagmi";
 import "./App.css";
@@ -11,6 +11,7 @@ import Create from "./pages/Create";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import TradesPage from "./pages/Trades";
+import PleaseConnect from "./components/PleaseConnect";
 
 function App() {
   const { address, isConnected } = useAccount();
@@ -23,8 +24,32 @@ function App() {
         <Box minH={"100dvh"} minW={"320px"} maxW={"100dvw"} mt={"1rem"} mb={"6rem"} p={"1rem"}>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/create" element={isConnected ? <Create /> : "Please Connect Your Wallet"} />
-            <Route path="/trades" element={isConnected ? <TradesPage /> : "Please Connect Your Wallet"} />
+            <Route
+              path="/create"
+              element={
+                isConnected ? (
+                  <Create />
+                ) : (
+                  <Flex textAlign={"center"} alignItems={"center"} gap={"2rem"} flexDirection={"column"}>
+                    <Heading>Please Connect Your Wallet</Heading>
+                    <PleaseConnect />
+                  </Flex>
+                )
+              }
+            />
+            <Route
+              path="/trades"
+              element={
+                isConnected ? (
+                  <TradesPage />
+                ) : (
+                  <Flex textAlign={"center"} alignItems={"center"} gap={"2rem"} flexDirection={"column"}>
+                    <Heading>Please Connect Your Wallet</Heading>
+                    <PleaseConnect />
+                  </Flex>
+                )
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Box>

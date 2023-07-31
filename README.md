@@ -163,4 +163,5 @@ Things Used In Developing This Project
 3. React Icons
 4. Wagmi
 5. Viem
-6. Alchemy SDK
+6. RainbowKit
+7. Alchemy SDK
