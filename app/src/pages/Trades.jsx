@@ -2,13 +2,13 @@ import { Button, Flex, Heading, Select, Spacer, Spinner, Text, Tooltip } from "@
 import { readContract } from "@wagmi/core";
 import { useEffect, useState } from "react";
 import { FaFilter } from "react-icons/fa";
+import { FaRotateLeft } from "react-icons/fa6";
 import { formatEther } from "viem";
 import { useAccount } from "wagmi";
 import { escrowData } from "../ABI/escrowData";
-import TradeCard from "../components/TradeCards";
 import AssetApproval from "../components/AssetApproval";
-import { FaRotateLeft } from "react-icons/fa6";
-import { formatAmountForERCAsset, parseAmountForERCAsset } from "../utils/assetAmount";
+import TradeCard from "../components/TradeCards";
+import { formatAmountForERCAsset } from "../utils/assetAmount";
 
 const STATUS = {
   0: "PENDING",
@@ -123,7 +123,7 @@ export default function TradesPage() {
         </Tooltip>
       </Flex>
       <Flex justifyContent={"space-between"} flexDirection={"row"}>
-        <Heading size={"md"}>Pending ({pendingTrades.length})</Heading>
+        <Heading size={"md"}>Pending ({PendingVisibility.length})</Heading>
 
         <Button onClick={() => setShowAllPending((p) => !p)}>{showAllPending ? "Hide" : "Show All"}</Button>
       </Flex>
@@ -155,7 +155,7 @@ export default function TradesPage() {
       </Flex>
 
       <Flex justifyContent={"space-between"} flexDirection={"row"}>
-        <Heading size={"md"}>Completed ({completedTrades.length})</Heading>
+        <Heading size={"md"}>Completed ({CompletedVisibility.length})</Heading>
 
         <Button onClick={() => setShowAllCompleted((p) => !p)}>{showAllCompleted ? "Hide" : "Show All"}</Button>
       </Flex>
@@ -187,7 +187,7 @@ export default function TradesPage() {
       </Flex>
 
       <Flex justifyContent={"space-between"} flexDirection={"row"}>
-        <Heading size={"md"}>Cancelled ({cancelledTrades.length})</Heading>
+        <Heading size={"md"}>Cancelled ({CancelledVisibility.length})</Heading>
 
         <Button onClick={() => setShowAllCancelled((p) => !p)}>{showAllCancelled ? "Hide" : "Show All"}</Button>
       </Flex>
@@ -219,7 +219,7 @@ export default function TradesPage() {
       </Flex>
 
       <Flex justifyContent={"space-between"} flexDirection={"row"}>
-        <Heading size={"md"}>Rejected ({rejectedTrades.length})</Heading>
+        <Heading size={"md"}>Rejected ({RejectedVisibility.length})</Heading>
 
         <Button onClick={() => setShowAllRejected((p) => !p)}>{showAllRejected ? "Hide" : "Show All"}</Button>
       </Flex>
