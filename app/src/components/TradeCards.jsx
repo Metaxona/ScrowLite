@@ -24,26 +24,24 @@ import {
   Spacer,
   Text,
   useDisclosure,
-  useToast,
 } from "@chakra-ui/react";
-import { readContract, watchContractEvent, writeContract } from "@wagmi/core";
+import { watchContractEvent, writeContract } from "@wagmi/core";
 import { useEffect, useState } from "react";
 import { FaCopy } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { erc20ABI, erc721ABI, useAccount } from "wagmi";
-import { erc1155Info } from "../ABI/erc1155";
-import { ercbalance } from "../ABI/ercbalance";
+import { parseEther } from "viem";
+import { useAccount } from "wagmi";
 import { escrowInfo } from "../ABI/escrow";
 import { alchemy } from "../alchemy/alchemy";
 import ERC1155Image from "../assets/ERC1155.svg";
 import ERC20Image from "../assets/ERC20.svg";
 import ERC721Image from "../assets/ERC721.svg";
+import { approveERC1155, approveERC20, approveERC721, hasEnoughERCAllowance } from "../utils/assetApproval";
+import { assetOwnership } from "../utils/assetOwnersip";
 import copyToClipboard from "../utils/copy";
 import { IPFStoHTTP } from "../utils/ipfstohttps";
 import shortenAddress from "../utils/shortenAddress";
-import { parseEther } from "viem";
 import { errorToast, successToast } from "../utils/toasts";
-import { approveERC1155, approveERC20, approveERC721 } from "../utils/assetApproval";
 
 const outlineColor = "#5CB9FE";
 const ONE_DAY_IN_MILISECONDS = 86400000;
@@ -64,23 +62,7 @@ const ASSET_IMAGE = {
   ERC1155: ERC1155Image,
 };
 
-export default function TradeCard({
-  partyA = "",
-  partyB = "",
-  title = "Trade Request",
-  tradeId = "0x12345678912345678912345678912345678912345678912345678912345678",
-  status = "PENDING",
-  fromType = "ERC20",
-  fromAddress = "0x1111111111111111111111111111111111111111",
-  fromTokenId = 0,
-  fromAmount = 0,
-  toType = "ERC20",
-  toAddress = "0x1111111111111111111111111111111111111111",
-  toTokenId = 0,
-  toAmount = 0,
-  dateCreated,
-}) {
-  const toast = useToast();
+export default function TradeCard({ partyA, partyB, title, tradeId, status, fromType, fromAddress, fromTokenId, fromAmount, toType, toAddress, toTokenId, toAmount, dateCreated, setRefreshTrades }) {
   const [isInteracting, setIsInteracting] = useState(false);
   const { isOpen: drawerIsOpen, onOpen: drawerOnOpen, onClose: drawerOnClose } = useDisclosure();
   const {
@@ -120,6 +102,7 @@ export default function TradeCard({
             if (data[0].args.partyB === address) {
               setIsInteracting(false);
               successToast(`${tradeId} Successfuly Accepted`, hash);
+              setRefreshTrades((p) => !p);
               unwatch();
             }
           },
@@ -144,6 +127,7 @@ export default function TradeCard({
             if (data[0].args.partyB === address) {
               setIsInteracting(false);
               successToast(`${tradeId} Successfuly Rejected`, hash);
+              setRefreshTrades((p) => !p);
               unwatch();
             }
           },
@@ -168,6 +152,7 @@ export default function TradeCard({
             if (data[0].args.partyA === address) {
               setIsInteracting(false);
               successToast(`${tradeId} Successfuly Cancelled`, hash);
+              setRefreshTrades((p) => !p);
               unwatch();
             }
           },
@@ -182,38 +167,29 @@ export default function TradeCard({
   }
 
   useEffect(() => {
-    async function getOwnership(assetType, contractAddress, ownerAddress, assetAmount, assetId) {
-      if (assetType === "ERC20") {
-        const assetInfo = await readContract({
-          address: ercbalance.libraryAddress,
-          abi: ercbalance.abi,
-          functionName: "ownsERC20Amount",
-          args: [contractAddress, ownerAddress, assetAmount],
-        });
-        setAssetOwner(assetInfo);
-      }
-      if (assetType === "ERC721") {
-        const assetInfo = await readContract({
-          address: ercbalance.libraryAddress,
-          abi: ercbalance.abi,
-          functionName: "ownsERC721token",
-          args: [contractAddress, ownerAddress, assetId],
-        });
-        setAssetOwner(assetInfo);
-      }
-      if (assetType === "ERC1155") {
-        const assetInfo = await readContract({
-          address: ercbalance.libraryAddress,
-          abi: ercbalance.abi,
-          functionName: "ownsERC1155Amount",
-          args: [contractAddress, ownerAddress, assetId, assetAmount],
-        });
-        setAssetOwner(assetInfo);
-      }
-    }
+    isConnected &&
+      address === partyB &&
+      assetOwnership(
+        { tokenType: toType, tokenAddress: toAddress, ownerAddress: address, tokenAmount: toAmount, tokenId: toTokenId },
+        (assetInfo) => {
+          setAssetOwner(assetInfo);
+        },
+        (error) => {
+          errorToast(error);
+        },
+      );
 
-    isConnected && address === partyB && getOwnership(toType, toAddress, address, toAmount, toTokenId);
-    isConnected && address === partyA && getOwnership(fromType, fromAddress, address, fromAmount, fromTokenId);
+    isConnected &&
+      address === partyA &&
+      assetOwnership(
+        { tokenType: fromType, tokenAddress: fromAddress, ownerAddress: address, tokenAmount: fromAmount, tokenId: fromTokenId },
+        (assetInfo) => {
+          setAssetOwner(assetInfo);
+        },
+        (error) => {
+          errorToast(error);
+        },
+      );
   }, [address, tradeId, drawerIsOpen]);
 
   useEffect(() => {
@@ -278,43 +254,19 @@ export default function TradeCard({
   }, [tradeId, status]);
 
   useEffect(() => {
-    async function approvalChecks() {
-      if (!isConnected) return;
-
-      if (toType === "ERC20") {
-        setHasEnoughAllowance(
-          await readContract({
-            address: ercbalance.libraryAddress,
-            abi: ercbalance.abi,
-            functionName: "hasEnoughERC20Allowance",
-            args: [toAddress, address, escrowInfo.contractAddress, parseEther(toAmount)],
-          }),
-        );
-      }
-      if (toType === "ERC721") {
-        if (!assetOwner) return setHasEnoughAllowance(false);
-        setHasEnoughAllowance(
-          await readContract({
-            address: ercbalance.libraryAddress,
-            abi: ercbalance.abi,
-            functionName: "hasEnoughERC721Allowance",
-            args: [toAddress, escrowInfo.contractAddress, address, toTokenId],
-          }),
-        );
-      }
-      if (toType === "ERC1155") {
-        setHasEnoughAllowance(
-          await readContract({
-            address: ercbalance.libraryAddress,
-            abi: ercbalance.abi,
-            functionName: "hasEnoughERC1155Allowance",
-            args: [toAddress, escrowInfo.contractAddress, address],
-          }),
-        );
-      }
-    }
-
-    isConnected && address === partyB && !REMOVE_INTERACTIONS_ON.includes(status) && approvalChecks();
+    isConnected &&
+      address === partyB &&
+      !REMOVE_INTERACTIONS_ON.includes(status) &&
+      hasEnoughERCAllowance(
+        { ercType: toType, ownerAddress: partyB, tokenAddress: toAddress, tokenId: toTokenId, tokenAmount: toAmount },
+        (data) => {
+          if (toType === "ERC721" && !assetOwner) return setHasEnoughAllowance(false);
+          setHasEnoughAllowance(data);
+        },
+        (error) => {
+          errorToast(error);
+        },
+      );
   }, [address, tradeId, hasBeenApproved]);
 
   async function approveAsset() {
@@ -380,7 +332,6 @@ export default function TradeCard({
         <Heading size={"sm"} mb={"0.5rem"} noOfLines={2} h={"-webkit-fill-available"}>
           {title}
         </Heading>
-
         <Flex maxW={"-webkit-fill-available"} flexDirection={"column"} gap={"0.3rem"}>
           <Image aspectRatio={1} src={toImage} alt={toAddress} borderRadius={"0.5rem"} />
           <Flex flexDirection={"row"} gap={"0.5rem"} flexWrap={"wrap"}>

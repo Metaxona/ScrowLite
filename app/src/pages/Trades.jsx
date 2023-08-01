@@ -123,7 +123,7 @@ export default function TradesPage() {
         </Tooltip>
       </Flex>
       <Flex justifyContent={"space-between"} flexDirection={"row"}>
-        <Heading size={"md"}>Pending ({PendingVisibility.length})</Heading>
+        <Heading size={"md"}>Pending ({pendingTrades.length})</Heading>
 
         <Button onClick={() => setShowAllPending((p) => !p)}>{showAllPending ? "Hide" : "Show All"}</Button>
       </Flex>
@@ -149,13 +149,14 @@ export default function TradesPage() {
               toTokenId={item.to[ASSET_TYPE[item.toType].toLowerCase()]?.tokenId || item.to[ASSET_TYPE[item.toType].toLowerCase()].tokenId === BigInt(0n) ? BigInt(item.to[ASSET_TYPE[item.toType].toLowerCase()].tokenId).toString() : ""}
               toAmount={item.to[ASSET_TYPE[item.toType].toLowerCase()]?.amount ? formatAmountForERCAsset(ASSET_TYPE[item.toType], BigInt(item.to[ASSET_TYPE[item.toType].toLowerCase()].amount).toString()) : ""}
               dateCreated={item.dateCreated}
+              setRefreshTrades={setRefreshTrades}
             />
           ))
         )}
       </Flex>
 
       <Flex justifyContent={"space-between"} flexDirection={"row"}>
-        <Heading size={"md"}>Completed ({CompletedVisibility.length})</Heading>
+        <Heading size={"md"}>Completed ({completedTrades.length})</Heading>
 
         <Button onClick={() => setShowAllCompleted((p) => !p)}>{showAllCompleted ? "Hide" : "Show All"}</Button>
       </Flex>
@@ -181,13 +182,14 @@ export default function TradesPage() {
               toTokenId={item.to[ASSET_TYPE[item.toType].toLowerCase()]?.tokenId ? BigInt(item.to[ASSET_TYPE[item.toType].toLowerCase()].tokenId).toString() : ""}
               toAmount={item.to[ASSET_TYPE[item.toType].toLowerCase()]?.amount ? formatEther(BigInt(item.to[ASSET_TYPE[item.toType].toLowerCase()].amount).toString()) : ""}
               dateCreated={item.dateCreated}
+              setRefreshTrades={setRefreshTrades}
             />
           ))
         )}
       </Flex>
 
       <Flex justifyContent={"space-between"} flexDirection={"row"}>
-        <Heading size={"md"}>Cancelled ({CancelledVisibility.length})</Heading>
+        <Heading size={"md"}>Cancelled ({cancelledTrades.length})</Heading>
 
         <Button onClick={() => setShowAllCancelled((p) => !p)}>{showAllCancelled ? "Hide" : "Show All"}</Button>
       </Flex>
@@ -213,13 +215,14 @@ export default function TradesPage() {
               toTokenId={item.to[ASSET_TYPE[item.toType].toLowerCase()]?.tokenId ? BigInt(item.to[ASSET_TYPE[item.toType].toLowerCase()].tokenId).toString() : ""}
               toAmount={item.to[ASSET_TYPE[item.toType].toLowerCase()]?.amount ? formatEther(BigInt(item.to[ASSET_TYPE[item.toType].toLowerCase()].amount).toString()) : ""}
               dateCreated={item.dateCreated}
+              setRefreshTrades={setRefreshTrades}
             />
           ))
         )}
       </Flex>
 
       <Flex justifyContent={"space-between"} flexDirection={"row"}>
-        <Heading size={"md"}>Rejected ({RejectedVisibility.length})</Heading>
+        <Heading size={"md"}>Rejected ({rejectedTrades.length})</Heading>
 
         <Button onClick={() => setShowAllRejected((p) => !p)}>{showAllRejected ? "Hide" : "Show All"}</Button>
       </Flex>
@@ -245,6 +248,7 @@ export default function TradesPage() {
               toTokenId={item.to[ASSET_TYPE[item.toType].toLowerCase()]?.tokenId ? BigInt(item.to[ASSET_TYPE[item.toType].toLowerCase()].tokenId).toString() : ""}
               toAmount={item.to[ASSET_TYPE[item.toType].toLowerCase()]?.amount ? formatEther(BigInt(item.to[ASSET_TYPE[item.toType].toLowerCase()].amount).toString()) : ""}
               dateCreated={item.dateCreated}
+              setRefreshTrades={setRefreshTrades}
             />
           ))
         )}

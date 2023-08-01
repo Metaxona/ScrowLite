@@ -6,20 +6,20 @@ import { Link } from "react-router-dom";
 import { parseEther } from "viem";
 import { erc20ABI, erc721ABI, useAccount } from "wagmi";
 import { erc1155Info } from "../ABI/erc1155";
-import { ercbalance } from "../ABI/ercbalance";
 import { escrowInfo } from "../ABI/escrow";
-import AssetApproval from "./AssetApproval";
-import { errorToast, successToast } from "../utils/toasts";
 import { parseAmountForERCAsset } from "../utils/assetAmount";
+import { hasEnoughERCAllowance } from "../utils/assetApproval";
+import { assetOwnership } from "../utils/assetOwnersip";
+import { errorToast, successToast } from "../utils/toasts";
+import AssetApproval from "./AssetApproval";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-/**
- * Asset Type
- * 0 - ERC20
- * 1 - ERC721
- * 2 - ERC1155
- */
+const ASSET_TYPE = {
+  0: "ERC20",
+  1: "ERC721",
+  2: "ERC1155",
+};
 
 export default function CreateTrade() {
   const { address, isConnected } = useAccount();
@@ -34,6 +34,8 @@ export default function CreateTrade() {
   const [hasEnoughAllowance, setHasEnoughAllowance] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
 
+  const [assetIsOwned, setAssetIsOwned] = useState(false);
+
   async function handleSubmit(event) {
     event.preventDefault();
     setIsInteracting(true);
@@ -47,6 +49,11 @@ export default function CreateTrade() {
     const partyBparams = fillAssetDetails(formJson.toType, formJson.toContractAddress, formJson.toTokenId, formJson?.toTokenAmount ? parseAmountForERCAsset(formJson.toType, `${formJson.toTokenAmount}`) : 0);
 
     try {
+      const SelfZeroError = new Error(`Can Not Request Trade To Self Or To ${ZERO_ADDRESS}`);
+      SelfZeroError.name = "TradeTargetError";
+
+      if (formJson.partyB.toLowerCase() === address.toLowerCase() || formJson.partyB === ZERO_ADDRESS) throw SelfZeroError;
+
       const fee = await readContract({
         address: escrowInfo.contractAddress,
         abi: escrowInfo.abi,
@@ -106,43 +113,28 @@ export default function CreateTrade() {
   }
 
   useEffect(() => {
-    async function approvalChecks() {
-      if (!isConnected) return;
+    isConnected &&
+      assetOwnership(
+        { tokenType: ASSET_TYPE[fromAssetType], tokenAddress: fromContract, ownerAddress: address, tokenId: fromTokenId, tokenAmount: fromAmount },
+        (assetInfo) => {
+          setAssetIsOwned(assetInfo);
+        },
+        (error) => {
+          errorToast(error);
+        },
+      );
 
-      if (fromAssetType === "0") {
-        setHasEnoughAllowance(
-          await readContract({
-            address: ercbalance.libraryAddress,
-            abi: ercbalance.abi,
-            functionName: "hasEnoughERC20Allowance",
-            args: [fromContract, address, escrowInfo.contractAddress, parseEther(fromAmount)],
-          }),
-        );
-      }
-      if (fromAssetType === "1") {
-        setHasEnoughAllowance(
-          await readContract({
-            address: ercbalance.libraryAddress,
-            abi: ercbalance.abi,
-            functionName: "hasEnoughERC721Allowance",
-            args: [fromContract, escrowInfo.contractAddress, address, fromTokenId],
-          }),
-        );
-      }
-      if (fromAssetType === "2") {
-        setHasEnoughAllowance(
-          await readContract({
-            address: ercbalance.libraryAddress,
-            abi: ercbalance.abi,
-            functionName: "hasEnoughERC1155Allowance",
-            args: [fromContract, escrowInfo.contractAddress, address],
-          }),
-        );
-      }
-    }
-
-    isConnected && approvalChecks();
-  }, [address, fromContract, fromAmount, fromTokenId]);
+    hasEnoughERCAllowance(
+      { ercType: ASSET_TYPE[fromAssetType], ownerAddress: address, tokenAddress: fromContract, tokenId: fromTokenId, tokenAmount: fromAmount },
+      (data) => {
+        if (ASSET_TYPE[fromAssetType] === "ERC721" && !assetIsOwned) return setHasEnoughAllowance(false);
+        setHasEnoughAllowance(data);
+      },
+      (error) => {
+        errorToast(error);
+      },
+    );
+  }, [address, fromContract, fromAmount, fromTokenId, isInteracting]);
 
   async function approveAsset() {
     setIsInteracting(true);
@@ -194,14 +186,12 @@ export default function CreateTrade() {
         );
       }
       if (fromAssetType === "2") {
-        console.log("SHOULD BE HERE");
         const { hash } = await writeContract({
           address: fromContract,
           abi: erc1155Info.abi,
           functionName: "setApprovalForAll",
           args: [escrowInfo.contractAddress, true],
         });
-        O;
 
         const unwatch = watchContractEvent(
           {
@@ -210,7 +200,6 @@ export default function CreateTrade() {
             eventName: "ApprovalForAll",
           },
           (data) => {
-            console.log("SHOULD BE SOMETHING ", data);
             if (data[0].args.owner === address) {
               setIsInteracting(false);
               successToast(`${fromContract} Successfuly Approved`, hash);
@@ -313,12 +302,12 @@ export default function CreateTrade() {
             </Card>
           </Flex>
           {hasEnoughAllowance ? (
-            <Button isLoading={isInteracting} type="submit" w={"15rem"} colorScheme="blue" variant={"solid"}>
-              Create Trade
+            <Button isLoading={isInteracting} type="submit" w={"15rem"} colorScheme="blue" variant={"solid"} isDisabled={!assetIsOwned}>
+              {assetIsOwned ? "Create Trade" : "Asset Not Owned"}
             </Button>
           ) : (
-            <Button isLoading={isInteracting} w={"15rem"} colorScheme="blue" variant={"solid"} onClick={approveAsset}>
-              Approve
+            <Button isLoading={isInteracting} w={"15rem"} colorScheme="blue" variant={"solid"} onClick={approveAsset} isDisabled={!assetIsOwned}>
+              {assetIsOwned ? "Approve" : "Asset Not Owned"}
             </Button>
           )}
 
