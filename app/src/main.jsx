@@ -9,13 +9,13 @@ import "./index.css";
 import { chains, wagmiConfig } from "./wagmi.js";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider chains={chains} initialChain={sepolia} theme={{ lightMode: lightTheme(), darkMode: darkTheme() }}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </RainbowKitProvider>
-    </WagmiConfig>
-  </React.StrictMode>,
+    <React.StrictMode>
+        <WagmiConfig config={wagmiConfig}>
+            <RainbowKitProvider chains={chains} initialChain={sepolia} theme={{ lightMode: lightTheme(), darkMode: darkTheme() }}>
+                <BrowserRouter>
+                    <App />
+                </BrowserRouter>
+            </RainbowKitProvider>
+        </WagmiConfig>
+    </React.StrictMode>,
 );

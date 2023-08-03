@@ -14,57 +14,57 @@ import TradesPage from "./pages/Trades";
 import PleaseConnect from "./components/PleaseConnect";
 
 function App() {
-  const { address, isConnected } = useAccount();
+    const { address, isConnected } = useAccount();
 
-  return (
-    <ChakraProvider>
-      <Box minH={"100dvh"} minW={"320px"}>
-        <ScrollToTop />
-        <Header />
-        <Box minH={"100dvh"} minW={"320px"} maxW={"100dvw"} mt={"1rem"} mb={"6rem"} p={"1rem"}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route
-              path="/create"
-              element={
-                isConnected ? (
-                  <Create />
-                ) : (
-                  <Flex textAlign={"center"} alignItems={"center"} gap={"2rem"} flexDirection={"column"}>
-                    <Heading>Please Connect Your Wallet</Heading>
-                    <PleaseConnect />
-                  </Flex>
-                )
-              }
-            />
-            <Route
-              path="/trades"
-              element={
-                isConnected ? (
-                  <TradesPage />
-                ) : (
-                  <Flex textAlign={"center"} alignItems={"center"} gap={"2rem"} flexDirection={"column"}>
-                    <Heading>Please Connect Your Wallet</Heading>
-                    <PleaseConnect />
-                  </Flex>
-                )
-              }
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Box>
-        <Hide above="lg">
-          {" "}
-          <FloatingFooter />{" "}
-        </Hide>
-        <MobileNavigation />
-        <Hide below="lg">
-          {" "}
-          <Footer />{" "}
-        </Hide>
-      </Box>
-    </ChakraProvider>
-  );
+    return (
+        <ChakraProvider>
+            <Box minH={"100dvh"} minW={"320px"}>
+                <ScrollToTop />
+                <Header />
+                <Box minH={"100dvh"} minW={"320px"} maxW={"100dvw"} mt={"1rem"} mb={"6rem"} p={"1rem"}>
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route
+                            path="/create"
+                            element={
+                                isConnected ? (
+                                    <Create />
+                                ) : (
+                                    <Flex textAlign={"center"} alignItems={"center"} gap={"2rem"} flexDirection={"column"}>
+                                        <Heading>Please Connect Your Wallet</Heading>
+                                        <PleaseConnect />
+                                    </Flex>
+                                )
+                            }
+                        />
+                        <Route
+                            path="/trades"
+                            element={
+                                isConnected ? (
+                                    <TradesPage />
+                                ) : (
+                                    <Flex textAlign={"center"} alignItems={"center"} gap={"2rem"} flexDirection={"column"}>
+                                        <Heading>Please Connect Your Wallet</Heading>
+                                        <PleaseConnect />
+                                    </Flex>
+                                )
+                            }
+                        />
+                        <Route path="*" element={<NotFound />} />
+                    </Routes>
+                </Box>
+                <Hide above="lg">
+                    {" "}
+                    <FloatingFooter />{" "}
+                </Hide>
+                <MobileNavigation />
+                <Hide below="lg">
+                    {" "}
+                    <Footer />{" "}
+                </Hide>
+            </Box>
+        </ChakraProvider>
+    );
 }
 
 export default App;

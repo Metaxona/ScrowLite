@@ -10,130 +10,130 @@ import { InteractionControl } from "../components/InteractionControl";
 const ERC_TYPES = ["20", "721", "1155"];
 
 export default function Home() {
-  const { colorMode, toggleColorMode } = useColorMode();
-  const [tradeCount, setTradeCount] = useState(0);
-  const [pendingCount, setPendingCount] = useState(0);
-  const [completedCount, setCompletedCount] = useState(0);
-  const [cancelledCount, setCancelledCount] = useState(0);
-  const [rejectedCount, setRejectedCount] = useState(0);
-  const [interactionStatus, setInteractionStatus] = useState(false);
+    const { colorMode, toggleColorMode } = useColorMode();
+    const [tradeCount, setTradeCount] = useState(0);
+    const [pendingCount, setPendingCount] = useState(0);
+    const [completedCount, setCompletedCount] = useState(0);
+    const [cancelledCount, setCancelledCount] = useState(0);
+    const [rejectedCount, setRejectedCount] = useState(0);
+    const [interactionStatus, setInteractionStatus] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
-  const [ERC1, setERC1] = useState("20");
-  const [ERC2, setERC2] = useState("20");
+    const [ERC1, setERC1] = useState("20");
+    const [ERC2, setERC2] = useState("20");
 
-  useEffect(() => {
-    let counter1 = 0;
-    let counter2 = 0;
+    useEffect(() => {
+        let counter1 = 0;
+        let counter2 = 0;
 
-    const interval = setInterval(() => {
-      setERC1(ERC_TYPES[counter1]);
+        const interval = setInterval(() => {
+            setERC1(ERC_TYPES[counter1]);
 
-      counter1++;
-      if (counter1 === 3) {
-        counter1 = 0;
-      }
-    }, 1000);
+            counter1++;
+            if (counter1 === 3) {
+                counter1 = 0;
+            }
+        }, 1000);
 
-    const interval2 = setInterval(() => {
-      setERC2(ERC_TYPES[counter2]);
+        const interval2 = setInterval(() => {
+            setERC2(ERC_TYPES[counter2]);
 
-      counter2++;
-      if (counter2 === 3) {
-        counter2 = 0;
-      }
-    }, 1000 / 3);
+            counter2++;
+            if (counter2 === 3) {
+                counter2 = 0;
+            }
+        }, 1000 / 3);
 
-    return () => {
-      clearInterval(interval);
-      clearInterval(interval2);
-    };
-  }, []);
+        return () => {
+            clearInterval(interval);
+            clearInterval(interval2);
+        };
+    }, []);
 
-  useEffect(() => {
-    setIsLoading(true);
-    async function getStats() {
-      const escrowContract = {
-        address: escrowInfo.contractAddress,
-        abi: escrowInfo.abi,
-      };
+    useEffect(() => {
+        setIsLoading(true);
+        async function getStats() {
+            const escrowContract = {
+                address: escrowInfo.contractAddress,
+                abi: escrowInfo.abi,
+            };
 
-      const data = await readContracts({
-        contracts: [
-          {
-            ...escrowContract,
-            functionName: "tradeCount",
-          },
-          {
-            ...escrowContract,
-            functionName: "pendingCount",
-          },
-          {
-            ...escrowContract,
-            functionName: "completedCount",
-          },
-          {
-            ...escrowContract,
-            functionName: "cancelledCount",
-          },
-          {
-            ...escrowContract,
-            functionName: "rejectedCount",
-          },
-          {
-            ...escrowContract,
-            functionName: "interactionPaused",
-          },
-        ],
-      });
-      const [trade, pending, completed, cancelled, rejected, interactionPaused] = data;
+            const data = await readContracts({
+                contracts: [
+                    {
+                        ...escrowContract,
+                        functionName: "tradeCount",
+                    },
+                    {
+                        ...escrowContract,
+                        functionName: "pendingCount",
+                    },
+                    {
+                        ...escrowContract,
+                        functionName: "completedCount",
+                    },
+                    {
+                        ...escrowContract,
+                        functionName: "cancelledCount",
+                    },
+                    {
+                        ...escrowContract,
+                        functionName: "rejectedCount",
+                    },
+                    {
+                        ...escrowContract,
+                        functionName: "interactionPaused",
+                    },
+                ],
+            });
+            const [trade, pending, completed, cancelled, rejected, interactionPaused] = data;
 
-      setTradeCount(trade?.error ? "Error" : BigInt(trade.result).toString());
-      setPendingCount(pending?.error ? "Error" : BigInt(pending.result).toString());
-      setCompletedCount(completed?.error ? "Error" : BigInt(completed.result).toString());
-      setCancelledCount(cancelled?.error ? "Error" : BigInt(cancelled.result).toString());
-      setRejectedCount(rejected?.error ? "Error" : BigInt(rejected.result).toString());
-      setInteractionStatus(interactionPaused?.error ? "Error" : interactionPaused.result);
+            setTradeCount(trade?.error ? "Error" : BigInt(trade.result).toString());
+            setPendingCount(pending?.error ? "Error" : BigInt(pending.result).toString());
+            setCompletedCount(completed?.error ? "Error" : BigInt(completed.result).toString());
+            setCancelledCount(cancelled?.error ? "Error" : BigInt(cancelled.result).toString());
+            setRejectedCount(rejected?.error ? "Error" : BigInt(rejected.result).toString());
+            setInteractionStatus(interactionPaused?.error ? "Error" : interactionPaused.result);
 
-      setIsLoading(false);
-    }
+            setIsLoading(false);
+        }
 
-    getStats();
-  }, []);
+        getStats();
+    }, []);
 
-  return (
-    <Box>
-      <Flex flexDirection={"column"} gap={"1rem"} alignItems={"center"}>
-        <Flex alignItems={"center"} my={"2rem"} flexDirection={"column"}>
-          {colorMode == "light" ? <Image draggable={false} src={ScrowLiteLogoWhiteBF} alt="ScrowLite" w={"10rem"} h={"10rem"} /> : <Image draggable={false} src={ScrowLiteLogoBlackWF} alt="ScrowLite" w={"10rem"} h={"10rem"} />}
-          <Heading size={"md"}>Trade</Heading>
-          <Heading size={"md"}>
-            ERC{ERC1} To ERC{ERC2}
-          </Heading>
-          <Heading size={"md"}>Without Worry</Heading>
-        </Flex>
+    return (
+        <Box>
+            <Flex flexDirection={"column"} gap={"1rem"} alignItems={"center"}>
+                <Flex alignItems={"center"} my={"2rem"} flexDirection={"column"}>
+                    {colorMode == "light" ? <Image draggable={false} src={ScrowLiteLogoWhiteBF} alt="ScrowLite" w={"10rem"} h={"10rem"} /> : <Image draggable={false} src={ScrowLiteLogoBlackWF} alt="ScrowLite" w={"10rem"} h={"10rem"} />}
+                    <Heading size={"md"}>Trade</Heading>
+                    <Heading size={"md"}>
+                        ERC{ERC1} To ERC{ERC2}
+                    </Heading>
+                    <Heading size={"md"}>Without Worry</Heading>
+                </Flex>
 
-        <Flex justifyContent={"center"} my={"1rem"}>
-          <Status
-            isLoading={isLoading}
-            label={"Create/Accept Interaction"}
-            value={interactionStatus ? "Paused" : "Allowed"}
-            minWidth="10rem"
-            help="This shows the status of Create and Accept interactions, if they are enabled or not. Create and Accept interaction will only be paused if there is a security bug/exploit found in the contract"
-          />
-        </Flex>
+                <Flex justifyContent={"center"} my={"1rem"}>
+                    <Status
+                        isLoading={isLoading}
+                        label={"Create/Accept Interaction"}
+                        value={interactionStatus ? "Paused" : "Allowed"}
+                        minWidth="10rem"
+                        help="This shows the status of Create and Accept interactions, if they are enabled or not. Create and Accept interaction will only be paused if there is a security bug/exploit found in the contract"
+                    />
+                </Flex>
 
-        <Flex flexWrap={"wrap"} justifyContent={"center"} gap={"1rem"}>
-          <Status isLoading={isLoading} label={"Total"} value={tradeCount} minWidth="10rem" />
-          <Status isLoading={isLoading} label={"Pending"} value={pendingCount} minWidth="10rem" />
-          <Status isLoading={isLoading} label={"Completed"} value={completedCount} minWidth="10rem" />
-          <Status isLoading={isLoading} label={"Cancelled"} value={cancelledCount} minWidth="10rem" />
-          <Status isLoading={isLoading} label={"Rejected"} value={rejectedCount} minWidth="10rem" />
-        </Flex>
+                <Flex flexWrap={"wrap"} justifyContent={"center"} gap={"1rem"}>
+                    <Status isLoading={isLoading} label={"Total"} value={tradeCount} minWidth="10rem" />
+                    <Status isLoading={isLoading} label={"Pending"} value={pendingCount} minWidth="10rem" />
+                    <Status isLoading={isLoading} label={"Completed"} value={completedCount} minWidth="10rem" />
+                    <Status isLoading={isLoading} label={"Cancelled"} value={cancelledCount} minWidth="10rem" />
+                    <Status isLoading={isLoading} label={"Rejected"} value={rejectedCount} minWidth="10rem" />
+                </Flex>
 
-        <InteractionControl />
-      </Flex>
-    </Box>
-  );
+                <InteractionControl />
+            </Flex>
+        </Box>
+    );
 }
