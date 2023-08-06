@@ -1,0 +1,39 @@
+import FloatingFooter from "@/components/FloatingFooter";
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+import { MobileNavigation } from "@/components/Navigation";
+import "@rainbow-me/rainbowkit/styles.css";
+import { Inter } from "next/font/google";
+import "./global.css";
+import "./normalize.css";
+import { Providers, WalletProviders } from "./provider";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata = {
+    title: "ScrowLite",
+    description: "Trustless ERC to ERC Escrow",
+};
+
+export default function RootLayout({ children }) {
+    return (
+        <html lang="en">
+            <head>
+                <link rel="icon" href="/favicon.ico" sizes="any" />
+            </head>
+            <body className={inter.className}>
+                <WalletProviders>
+                    <Providers>
+                        <Header />
+                        <main>
+                            {children}
+                            <FloatingFooter />
+                        </main>
+                        <MobileNavigation />
+                        <Footer />
+                    </Providers>
+                </WalletProviders>
+            </body>
+        </html>
+    );
+}
