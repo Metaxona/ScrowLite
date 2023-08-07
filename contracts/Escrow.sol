@@ -14,7 +14,7 @@ import "./libraries/ERCBalanceLibrary.sol";
 
 /**
 @title Metaxona ERC Escrow System
-@custom:contract-name Escrow
+@custom:contract-name ScrowLite
 @custom:version 1.0.1-beta
 @author Metaxona
 @custom:author-url https://metaxona.com 
@@ -22,7 +22,7 @@ import "./libraries/ERCBalanceLibrary.sol";
 @notice This Escrow Contract Will Enable Two Parties To Trade One ERC 20, 721, or 1155 With Each Other
 In A Trustless Manner Without Worrying That Their Assets Would Be Cheated/Scammed From Them.
 */
-contract Escrow is Ownable, Fees, Pausable, Withdrawable {
+contract ScrowLite is Ownable, Fees, Pausable, Withdrawable {
 
     mapping (bytes32 => Instance) private tradeInstance;
     mapping (address => History) private tradeHistory;

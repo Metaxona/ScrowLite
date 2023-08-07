@@ -156,12 +156,26 @@ Things Used In Developing This Project
 3. nodemon
 4. Slither by Crytic
 
-### User Interface
+### User Interface (React)
 
 1. React
-2. Chakra UI
-3. React Icons
-4. Wagmi
-5. Viem
-6. RainbowKit
-7. Alchemy SDK
+2. React Router
+3. Chakra UI
+4. React Icons
+5. Wagmi
+6. Viem
+7. RainbowKit
+8. Alchemy SDK
+9. Prettier
+
+### User Interface (Next)
+
+1. React
+2. Next JS 13 App Router
+3. Chakra UI
+4. React Icons
+5. Wagmi
+6. Viem
+7. RainbowKit
+8. Alchemy SDK
+9. Prettier

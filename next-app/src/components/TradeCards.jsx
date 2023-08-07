@@ -175,7 +175,7 @@ export default function TradeCard({ partyA, partyB, title, tradeId, status, from
                     setAssetOwner(assetInfo);
                 },
                 (error) => {
-                    errorToast(error);
+                    // errorToast(error);
                 },
             );
 
@@ -187,7 +187,7 @@ export default function TradeCard({ partyA, partyB, title, tradeId, status, from
                     setAssetOwner(assetInfo);
                 },
                 (error) => {
-                    errorToast(error);
+                    // errorToast(error);
                 },
             );
     }, [address, tradeId, drawerIsOpen]);
@@ -264,10 +264,10 @@ export default function TradeCard({ partyA, partyB, title, tradeId, status, from
                     setHasEnoughAllowance(data);
                 },
                 (error) => {
-                    errorToast(error);
+                    // errorToast(error);
                 },
             );
-    }, [address, tradeId, hasBeenApproved]);
+    }, [address, tradeId, hasBeenApproved, assetOwner]);
 
     async function approveAsset() {
         setIsInteracting(true);

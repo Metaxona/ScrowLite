@@ -3,12 +3,9 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { MobileNavigation } from "@/components/Navigation";
 import "@rainbow-me/rainbowkit/styles.css";
-import { Inter } from "next/font/google";
 import "./global.css";
 import "./normalize.css";
 import { Providers, WalletProviders } from "./provider";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
     title: "ScrowLite",
@@ -21,7 +18,7 @@ export default function RootLayout({ children }) {
             <head>
                 <link rel="icon" href="/favicon.ico" sizes="any" />
             </head>
-            <body className={inter.className}>
+            <body>
                 <WalletProviders>
                     <Providers>
                         <Header />
