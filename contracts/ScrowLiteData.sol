@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "./types/EscrowTypes.sol";
+import "./types/ScrowLiteTypes.sol";
 import "./extensions/Ownable.sol";
 
-interface IEscrow {
+interface IScrowLite {
 
     event Created(bytes32 indexed instanceId, address partyA, address partyB, AssetType from, AssetType to);
     event Completed(bytes32 indexed instanceId, address partyA, address partyB, AssetType from, AssetType to);
@@ -35,7 +35,7 @@ interface IEscrow {
 
 }
 
-contract EscrowData is Ownable {
+contract ScrowLiteData is Ownable {
 
     address public escrowContract;
 
@@ -52,12 +52,12 @@ contract EscrowData is Ownable {
     `_user` - address of the user whose expanded history is being viewed
     */
     function getExpandedHistory(address _user) external view returns(Instance[] memory) {
-        bytes32[] memory _ids = IEscrow(escrowContract).getHistory(_user);
+        bytes32[] memory _ids = IScrowLite(escrowContract).getHistory(_user);
         
         Instance[] memory _tradeList = new Instance[](_ids.length);
 
         for(uint256 i = 0; i < _ids.length ; i++){
-            _tradeList[i] = IEscrow(escrowContract).getEscrowById(_ids[i]);
+            _tradeList[i] = IScrowLite(escrowContract).getEscrowById(_ids[i]);
         }
 
         return _tradeList;

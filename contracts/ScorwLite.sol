@@ -8,7 +8,7 @@ import "./extensions/Ownable.sol";
 import "./extensions/Fees.sol";
 import "./extensions/Pausable.sol";
 import "./extensions/Withdrawable.sol";
-import "./types/EscrowTypes.sol";
+import "./types/ScrowLiteTypes.sol";
 import "./libraries/IdGeneratorLibrary.sol";
 import "./libraries/ERCBalanceLibrary.sol";
 

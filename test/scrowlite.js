@@ -64,7 +64,7 @@ describe('Escrow', () => {
         const idGenerator = await hre.ethers.deployContract("IdGenerator")
         await idGenerator.waitForDeployment();
 
-        const Escrow = await hre.ethers.getContractFactory("Escrow", {libraries: {IdGenerator: idGenerator.target, ERCBalance: ercBalance.target}})
+        const Escrow = await hre.ethers.getContractFactory("ScrowLite", {libraries: {IdGenerator: idGenerator.target, ERCBalance: ercBalance.target}})
         escrow = await Escrow.deploy()
 
         return { escrow }

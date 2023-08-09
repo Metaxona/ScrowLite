@@ -11,13 +11,18 @@ async function main() {
     // const idGenerator = await IdGenerator.deploy();
     // await idGenerator.waitForDeployment();
 
-    const Escrow = await hre.ethers.getContractFactory("Escrow", {libraries: {IdGenerator: idGenerator.target, ERCBalance: ercBalance.target}})
-    const escrow = await Escrow.deploy()
+    const ScrowLite = await hre.ethers.getContractFactory("ScrowLite", {libraries: {IdGenerator: idGenerator.target, ERCBalance: ercBalance.target}})
+    const scrowLite = await ScrowLite.deploy()
     // await escrow.waitForDeployment()
 
     console.log(`ERCBalance deployed to ${ercBalance.target}`);
     console.log(`IdGenerator deployed to ${idGenerator.target}`);
-    console.log(`Escrow deployed to ${escrow.target}`);
+    console.log(`ScrowLite deployed to ${scrowLite.target}`);
+
+    const ScrowLiteData = await hre.ethers.getContractFactory("ScrowLiteData")
+    const scrowLiteData = await ScrowLiteData.deploy(scrowLite.target)
+
+    console.log(`EscrowData deployed to ${scrowLiteData.target}`);
 }
 
 main().catch((error) => {
