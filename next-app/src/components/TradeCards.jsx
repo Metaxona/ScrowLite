@@ -590,11 +590,11 @@ export default function TradeCard({ partyA, partyB, title, tradeId, status, from
 
             <Modal isOpen={modalIsOpen} onClose={modalOnClose}>
                 <ModalOverlay />
-                <ModalContent>
+                <ModalContent mx={"0.5rem"} mt={"5rem"}>
                     <ModalHeader mr={"1rem"}>Are You Sure You Want To Proceed?</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        <Text>Proceeding in the trade will automatically execute the trade and there is no turning back.</Text>
+                        <Text>Proceeding in the trade will automatically execute the trade after wallet confirmation and there is no turning back.</Text>
                         <Spacer my={"1rem"} />
                         <Text>In the case of one party not having the required asset/s for this trade, the trade request will revert automatically and will not proceed until both party has the required assets for the trade.</Text>
                     </ModalBody>

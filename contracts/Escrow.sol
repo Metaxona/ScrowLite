@@ -14,7 +14,7 @@ import "./libraries/ERCBalanceLibrary.sol";
 
 /**
 @title Metaxona ERC Escrow System
-@custom:contract-name ScrowLite
+@custom:contract-name ScrowLite V1
 @custom:version 1.0.1-beta
 @author Metaxona
 @custom:author-url https://metaxona.com 
