@@ -1,7 +1,9 @@
-# ScrowLite v1.0.1-beta
+# ScrowLite v1.0.1-beta (Contract Repository)
 
 ![ScrowLite](./app/src/assets/ScrowLite_Black_WhiteFill.svg#gh-dark-mode-only)
 ![ScrowLite](./app/src/assets/ScrowLite_White_BlackFill.svg#gh-light-mode-only)
+
+[DApp Repository](https://github.com/Metaxona/ScrowLiteDApp)
 
 An Escrow Dapp For Trustless Trading of ERC20, ERC721, and ERC1155 Assets
 
