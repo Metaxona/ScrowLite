@@ -1,7 +1,7 @@
 # ScrowLite v1.0.1-beta (Contract Repository)
 
-![ScrowLite](./app/src/assets/ScrowLite_Black_WhiteFill.svg#gh-dark-mode-only)
-![ScrowLite](./app/src/assets/ScrowLite_White_BlackFill.svg#gh-light-mode-only)
+![ScrowLite](./Logo/ScrowLite_Black_WhiteFill.svg#gh-dark-mode-only)
+![ScrowLite](./Logo/ScrowLite_White_BlackFill.svg#gh-light-mode-only)
 
 [DApp Repository](https://github.com/Metaxona/ScrowLiteDApp)
 
